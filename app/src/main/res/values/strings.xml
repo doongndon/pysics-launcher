@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">물리 홈</string>
+    <string name="tile_name">물리 모드</string>
+    <string name="svc_desc">홈 화면에서 폰을 흔들면 아이콘과 위젯이 물리 법칙대로 떨어지고 굴러다니게 합니다. 화면을 읽고 찍는 권한은 홈 화면을 복사하는 데에만 쓰며, 찍은 내용은 휴대폰 밖으로 보내지 않습니다.</string>
+</resources>

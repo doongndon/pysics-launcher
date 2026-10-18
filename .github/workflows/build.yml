@@ -13,8 +13,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.14.3" }
       - run: gradle assembleRelease
-      - run: cp app/build/outputs/apk/release/app-release.apk PhysicsLauncher.apk
+      - run: cp app/build/outputs/apk/release/app-release.apk PhysicsHome.apk
       - env: { GH_TOKEN: "${{ github.token }}" }
         run: |
           gh release delete latest -y --cleanup-tag || true
-          gh release create latest PhysicsLauncher.apk -t "물리 런처" -n "폰에서 PhysicsLauncher.apk 를 눌러 설치하세요"
+          gh release create latest PhysicsHome.apk -t "물리 홈" -n "폰에서 PhysicsHome.apk 를 눌러 설치하세요"
