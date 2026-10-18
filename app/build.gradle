@@ -4,7 +4,7 @@ android {
     compileSdk 35
     defaultConfig {
         applicationId 'com.physics.launcher'
-        minSdk 30
+        minSdk 31
         targetSdk 35
         versionCode 4
         versionName '3.1'
