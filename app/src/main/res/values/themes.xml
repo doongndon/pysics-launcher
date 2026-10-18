@@ -1,8 +1,0 @@
-<resources>
-    <style name="Probe" parent="@android:style/Theme.DeviceDefault.Wallpaper.NoTitleBar">
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:windowDisablePreview">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-    </style>
-</resources>
