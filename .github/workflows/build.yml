@@ -12,7 +12,16 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.14.3" }
-      - run: gradle assembleRelease
+      - run: |
+          set -o pipefail
+          gradle assembleRelease --console=plain 2>&1 | tee build.log
+      - if: failure()
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          grep -iE "error|warning:|e: |What went wrong" -A3 build.log | head -150 > errors.txt || true
+          tail -60 build.log >> errors.txt
+          gh release delete buildlog -y --cleanup-tag || true
+          gh release create buildlog errors.txt -t buildlog -n "build failure log" --prerelease
       - run: cp app/build/outputs/apk/release/app-release.apk PhysicsHome.apk
       - env: { GH_TOKEN: "${{ github.token }}" }
         run: |
