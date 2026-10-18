@@ -172,6 +172,12 @@ public class MirrorService extends AccessibilityService implements SensorEventLi
         if (t == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if (p.equals(getPackageName())) return;
             if (state == ACTIVE && !capturing) endInstant();
+            else if (state == ACTIVE && !p.equals(homePkg) && !p.equals(SYSTEMUI)) {
+                // 페이지를 넘기다 다른 화면(예: 왼쪽 끝 피드)이 열렸으면 바로 멈추고 보여 줌
+                log("other window during capture: " + p);
+                writeDiag();
+                endInstant();
+            }
             if (p.equals(homePkg)) homeLikely = true;
             else if (!p.equals(SYSTEMUI)) homeLikely = false;
             updateListening();
@@ -392,8 +398,7 @@ public class MirrorService extends AccessibilityService implements SensorEventLi
         boolean capture = phase == 0 || phase == 2;
         boolean back = phase == 0 || phase == 3;
         AccessibilityNodeInfo w = workspace();
-        int a = back ? AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD : AccessibilityNodeInfo.ACTION_SCROLL_FORWARD;
-        boolean ok = w != null && Math.abs(cur) < 9 && w.performAction(a);
+        boolean ok = w != null && Math.abs(cur) < 9 && scroll(w, back);
         if (!ok) {
             if (capture) { phase++; step(g); }
             else { log("could not return to start page (cur=" + cur + ")"); finishCapture(g); }
@@ -532,8 +537,16 @@ public class MirrorService extends AccessibilityService implements SensorEventLi
         }
         AccessibilityNodeInfo w = workspace();
         if (w == null) return;
-        w.performAction(remaining > 0 ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+        scroll(w, remaining < 0);
         h.postDelayed(() -> clickAt(g, remaining > 0 ? remaining - 1 : remaining + 1, r), 550);
+    }
+
+    /** 홈 화면 페이지를 한 칸 넘김(앞/뒤 동작이 없으면 왼쪽/오른쪽 동작으로) */
+    static boolean scroll(AccessibilityNodeInfo w, boolean back) {
+        if (w.performAction(back ? AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD : AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)) return true;
+        AccessibilityNodeInfo.AccessibilityAction a = back
+                ? AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_LEFT : AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_RIGHT;
+        return w.performAction(a.getId());
     }
 
     AccessibilityNodeInfo nodeAt(AccessibilityNodeInfo n, int x, int y) {
@@ -649,7 +662,11 @@ public class MirrorService extends AccessibilityService implements SensorEventLi
             sb.append(' ').append(x.r.toShortString());
             if (n.isClickable()) sb.append(" C");
             if (n.isLongClickable()) sb.append(" LC");
-            if (x.scroll) sb.append(" S");
+            if (x.scroll) {
+                sb.append(" S[");
+                for (AccessibilityNodeInfo.AccessibilityAction ac : n.getActionList()) sb.append(Integer.toHexString(ac.getId())).append(',');
+                sb.append(']');
+            }
             if (x.label != null) sb.append(" \"").append(x.label.length() > 30 ? x.label.substring(0, 30) : x.label).append('"');
             sb.append('\n');
         }
