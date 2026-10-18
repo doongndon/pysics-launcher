@@ -478,7 +478,6 @@ public class MainActivity extends Activity implements SensorEventListener, World
         AppWidgetProviderInfo info = awm.getAppWidgetInfo(id);
         if (info == null) { Toast.makeText(this, "위젯 정보를 찾지 못했어요", Toast.LENGTH_SHORT).show(); return; }
         AppWidgetHostView v = host.createView(getApplicationContext(), id, info);
-        v.setInteractionHandler(this::widgetClick);
         // 홈 화면 칸(가로 4칸, 세로 약 100dp) 기준으로 위젯이 원하는 칸 수만큼 크기를 잡음
         float cw = getResources().getDisplayMetrics().widthPixels / 4f, ch = px(100);
         int sx = info.targetCellWidth > 0 ? info.targetCellWidth : (int) Math.ceil((info.minWidth + px(16)) / cw);
@@ -489,20 +488,6 @@ public class MainActivity extends Activity implements SensorEventListener, World
         int h = Math.min((int) (getResources().getDisplayMetrics().heightPixels * 0.45f), Math.round(sy * ch - px(8)));
         v.updateAppWidgetSize(null, Collections.singletonList(new android.util.SizeF(w / dp, h / dp)));
         world.addWidget(id, v, w, h, info.loadLabel(getPackageManager()));
-    }
-
-    /** 위젯 버튼 누르기: 홈 화면이 대신 보내 주도록 허용해야 위젯 속 앱이 열림 */
-    boolean widgetClick(View view, android.app.PendingIntent pi, android.widget.RemoteViews.RemoteResponse resp) {
-        android.util.Pair<Intent, ActivityOptions> lo = resp.getLaunchOptions(view);
-        ActivityOptions o = lo.second != null ? lo.second : ActivityOptions.makeBasic();
-        if (Build.VERSION.SDK_INT >= 34)
-            o.setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-        try {
-            pi.send(view.getContext(), 0, lo.first, null, null, null, o.toBundle());
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     void saveWidgets() {
